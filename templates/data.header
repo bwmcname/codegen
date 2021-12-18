@@ -1,0 +1,60 @@
+$ definitions $
+    $ define WriteRealTypeName(Type) ignore_new_line $
+        $ if Type.Name == "string" $described_string$ end ignore_new_line $
+        $ if Type.Name != "string" $$ Type.Name $$ end ignore_new_line $
+    $ end ignore_new_line $
+
+	$ define WriteType(Type) ignore_new_line $
+		$ WriteRealTypeName(Type) ignore_new_line $
+		$ if Type.Args.Size > 0 $<$ ignore_new_line $
+			$ for i = 0; i < Type.Args.Size; ++i $$ ignore_new_line $
+				$ WriteRealTypeName(Type.Args[i]) $$ if i != Type.Args.Size - 1 $,$ end ignore_new_line $
+			$ end $>$ ignore_new_line $
+		$ end ignore_new_line $
+	$ end ignore_new_line $
+
+	$ define WriteTypedArgumentList(List) ignore_new_line $
+		$ for I = 0; I < List.Size; ++I $$ ignore_new_line $
+			$ WriteType(List[I].Type) $ $ List[I].Name $$ if I != List.Size - 1 $,$ end ignore_new_line $
+		$ end ignore_new_line $
+	$ end ignore_new_line $
+
+	$ define WriteUntypedArgumentList(List) ignore_new_line $
+		$ for I = 0; I < List.Size; ++I $$ ignore_new_line $
+			$ List[I].Name $$ if I != List.Size - 1 $,$ end ignore_new_line $
+		$ end ignore_new_line $
+	$ end $
+
+	$ define WriteUnimplementedMethod(method) ignore_new_line $
+		$ WriteType(method.Type) $ $ method.Name $($ WriteTypedArgumentList(method.MethodArguments) $)
+		{
+			$ if method.Type.Name != "void" $return $ end $$ method.Name $_Implementation($ WriteUntypedArgumentList(method.MethodArguments) $);
+		}
+	$ end $
+
+	$ define WriteStruct(struct) ignore_new_line $
+		struct $ struct.Name $
+		{
+		$ begin_tab ignore_new_line $
+			$ foreach field in struct.Fields $$ breakpoint $$ ignore_new_line $
+				$ if !field.IsMethod $$ WriteType(field.Type) $ $ field.Name $;$ end ignore_new_line $
+				$ if field.IsMethod $$ WriteUnimplementedMethod(field) $$ end $
+			$ end ignore_new_line $
+		$ end ignore_new_line $
+		};
+
+        extern const field_descriptor $ struct.TypeInfo.CamelCase $Fields[$ struct.FieldCount $];
+        extern const type_descriptor $ struct.TypeInfo.Descriptor $;
+	$ end $
+$ end ignore_new_line $
+#pragma once
+#include "common/src/math_helpers.h"
+#include "common/src/numeric_types.h"
+#include "common/src/type_descriptor.h"
+#include "common/src/flags.h"
+#include "common/src/described_string.h"
+#include "common/src/list.h"
+
+$ foreach struct in Structs $$ ignore_new_line $
+    $ WriteStruct(struct) $
+$ end $

@@ -1,0 +1,24 @@
+$ definitions $
+	$ define PutPlatformInfo(field) ignore_new_line $
+		$ if has_attribute(field, "platform") ignore_new_line $
+			$ if field["platform"].key == "tool" $TOOL$ end ignore_new_line $
+			$ if field["platform"].key == "pc" $PC$ end ignore_new_line $
+		$ end ignore_new_line $
+	$ end ignore_new_line $
+
+	$ define PutFieldInitializer(field) ignore_new_line $
+		$ if field.HasInitializer ignore_new_line $
+			 = $ field.Initializer ignore_new_line $
+		$ end ignore_new_line $
+	$ end ignore_new_line $
+$ end ignore_new_line $
+Summary of Structures:
+
+$ foreach Struct in Structs ignore_new_line  $
+	$ Struct.Name $:
+	$ begin_tab ignore_new_line $
+		$ foreach Field in Struct.Fields ignore_new_line $
+			$ Field.Type.Name $ $ Field.Name $$ PutFieldInitializer(Field) $; $ PutPlatformInfo(Field) $
+		$ end ignore_new_line $
+	$ end ignore_new_line $
+$ end $

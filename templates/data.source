@@ -1,0 +1,52 @@
+$ definitions $
+    $ define WriteDescriptorForField(Field) ignore_new_line $
+        $ if Field.Type.Name == "list" $$ Field.Type.Args[0].Info.Descriptor $$ end ignore_new_line $
+        $ if Field.Type.Name != "list" $$ Field.Type.Info.Descriptor $$ end ignore_new_line $
+    $ end $
+    $ define WriteFieldFlags(Field) ignore_new_line $
+        0$ if Field.Type.Name == "list" $ | FLAG(field_descriptor_flags::is_list)$ end ignore_new_line $
+        $ if Field.Type.Name == "string" $ | FLAG(field_descriptor_flags::is_string) | FLAG(field_descriptor_flags::is_list)$ end ignore_new_line $
+    $ end $
+$ end ignore_new_line $
+#include "$ HeaderFile $"
+#include "common/src/flags.h"
+#include "common/src/compiler_utils.h"
+#include "common/src/type_descriptor.h"
+
+$ foreach struct in Structs $$ ignore_new_line $
+
+    static void Initialize$struct.TypeInfo.CamelCase$(void *Definition, const type_descriptor *Descriptor)
+    {
+        REF(Descriptor);
+        $ struct.Name $ *$ struct.TypeInfo.CamelCase $Instance = ($ struct.Name $*)Definition;
+
+        $ foreach Field in struct.Fields $$ ignore_new_line $
+            $ Field.Type.Info.Descriptor $.Initialize(&$ struct.TypeInfo.CamelCase  $Instance->$ Field.Name $, &$ WriteDescriptorForField(Field) $);
+        $ end ignore_new_line $
+    }
+
+	const field_descriptor $ struct.TypeInfo.CamelCase $Fields[$ struct.FieldCount $] =
+	{
+	$ begin_tab ignore_new_line $
+		$ foreach Field in struct.Fields $$ ignore_new_line $
+			{
+                $ WriteFieldFlags(Field) $,
+                &$ WriteDescriptorForField(Field) $,
+                offsetof($ struct.Name $, $ Field.Name $),
+                #ifdef TOOLS_BUILD
+                "$ Field.Name $",
+                #endif
+            },
+		$ end $$ ignore_new_line $
+	$ end ignore_new_line $
+	};
+
+	const type_descriptor $ struct.TypeInfo.Descriptor $ =
+	{
+        0,
+		sizeof($ struct.Name $),
+		$ struct.TypeInfo.CamelCase $Fields,
+		$ struct.FieldCount $,
+        Initialize$struct.TypeInfo.CamelCase $
+	};
+$ end $

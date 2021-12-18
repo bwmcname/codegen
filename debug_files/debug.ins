@@ -1,0 +1,30 @@
+
+declare_type string STRING_TD;
+declare_type float32 FLOAT32_TD;
+declare_type uint32 UINT32_TD;
+declare_type void NONE_TD;
+declare_type char CHAR_TD;
+
+declare_attribute version(text, binary)
+declare_attribute platform(key)
+declare_attribute const_attribute()
+
+alias_attribute tool [platform(key: tool)]
+alias_attribute pc [platform(key: pc)]
+alias_attribute const [const_attribute()]
+
+[version(text: 0, binary: 0)]
+struct Thingy
+{
+	void LogError(char *Message);
+	tool string Description = "easy_steazy";
+	pc float32 X = 1.0f;
+	pc float32 Y = 2.0f;
+	pc float32 Z = 3.0f;
+
+	tool uint32 *UID;
+
+	pc uint32 SimulateThingy(const float32 *pointerToData);
+
+	tool float32 HiBecca;
+};
