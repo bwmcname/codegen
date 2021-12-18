@@ -1,8 +1,5 @@
 @echo off
 
-rem Add bin folder if it doesn't already exist
-if not exist "..\bin" mkdir ..\bin
-
 set defn=-D_CRT_SECURE_NO_WARNINGS
 set warn=-wd4530 -wd4820 -wd4996 -wd4577 -wd5045 -wd4710 -wd4711 -wd4774 -wd4514
 set expm=-experimental:external /external:anglebrackets -external:W0
